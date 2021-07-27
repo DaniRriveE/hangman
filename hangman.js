@@ -16,43 +16,84 @@ let wordsToGuess = [
     "window",
     "floor"
 ];
-let wordToGuess = wordsToGuess[Math.floor(Math.random() * wordsToGuess.length)];
-let answerArray = [];
-for (let i = 0; i < wordToGuess.length; i++) {
-    answerArray.push("_");
-}
+let wordToGuess = pickWord();
+let answerArray = setupAnswerArray(wordToGuess);
 let remainingLetters = wordToGuess.length;
-let triesRemaining = 5;
+let triesRemaining = 8;
 let lettersEntered = [];
 
 while (remainingLetters > 0 && triesRemaining > 0) {
-    alert(answerArray.join(" ") + "\nTries remaining: " + triesRemaining + "\nLetters used: " + lettersEntered.join(", "));
+    showPlayerProgress(answerArray, triesRemaining, lettersEntered);
 
-    let guess = prompt("Guess a letter, or click cancel to stop playing.");
+    let guess = getGuess();
     if (guess === null) {
         break;
-    } else if (guess.length !== 1){
-        alert("Please enter a single letter.");
     } else {
-        guess = guess.toLowerCase();
-        lettersEntered.push(guess);
-        let letterGuessed = false;
+        let correctGuesses = updateGameState(guess, wordToGuess, answerArray);
+    }
+}
+showAnswerAndCongratulatePlayer(answerArray);
+
+
+
+
+
+function pickWord() {
+    return wordsToGuess[Math.floor(Math.random() * wordsToGuess.length)];
+}
+
+function setupAnswerArray(wordToGuess) {
+    let answerArray = [];
+    for (let i = 0; i < wordToGuess.length; i++) {
+        answerArray.push("_");
+    }
+    return answerArray;
+}
+
+function showPlayerProgress(answerArray, triesRemaining, lettersEntered) {
+    alert(answerArray.join(" ") + "\nTries remaining: " + triesRemaining + "\nLetters used: " + lettersEntered.join(", "));
+}
+
+function getGuess() {
+    let ch;
+    while (true){
+        ch = prompt("Guess a letter, or click cancel to stop playing.");
+        if (ch === null) return null;
+        if (ch.length === 1) {
+            if (lettersEntered.indexOf(ch) == -1) break;
+            alert("You have already entered this letter.")
+        } else {
+            alert("Please enter a single letter.");
+        }
+    }
+    ch = ch.toLowerCase();
+    lettersEntered.push(ch);
+    return ch;
+}
+
+function updateGameState(guess, wordToGuess, answerArray) {
+    let correctGuesses = 0;
         for (let i = 0; i < wordToGuess.length; i++) {
             if (wordToGuess[i] === guess && answerArray[i] === "_") {
                 answerArray[i] = guess;
                 remainingLetters--;
-                letterGuessed = true;
+                correctGuesses++;
             }
         }
-        if (!letterGuessed) {
+        if (!correctGuesses) {
             triesRemaining--;
             alert("Tries remaining: " + triesRemaining);
         }
-    }
+        return correctGuesses;
 }
-if (triesRemaining === 0){
-    alert ("You lose. Correct answer was " + wordToGuess);
-} else {
-    alert(answerArray.join(" "));
-    alert("Good job! The answer was " + wordToGuess);
+
+function showAnswerAndCongratulatePlayer(answerArray) {
+    if (triesRemaining === 0){
+        alert ("You lose. Correct answer was " + wordToGuess);
+    } else if (remainingLetters === 0){
+        alert(answerArray.join(" "));
+        alert("Good job! The answer was " + wordToGuess);
+    } else {
+        alert("The answer was " + wordToGuess);
+    }
 }
